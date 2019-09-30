@@ -23,18 +23,18 @@
 
 - name: Determine Leptonica's latest release information
   block:
-    - name: Fetch Tesseract release information
+    - name: Fetch Leptonica release information
       uri:
         url: https://api.github.com/repos/DanBloomberg/leptonica/releases/latest
       register: result
 
-    - name: Determine latest release and release tarball URL of Tesseract
+    - name: Determine latest release and release tarball URL of Leptonica
       set_fact:
         latest_tarball_url: '{{ result.json.assets[0].browser_download_url }}'
         latest_version: '{{ result.json.tag_name }}'
   rescue:
     - fail:
-        msg: Unable to determine the latest Tesseract release
+        msg: Unable to determine the latest Leptonica release
 
 - name: Create temporary directory for software building
   tempfile:
