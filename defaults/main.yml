@@ -1,0 +1,4 @@
+---
+# Refer README for details
+installation_prefix: auto-detected
+custom_configure_args:

@@ -1,0 +1,113 @@
+---
+- name: Update system to apply possible bug fixes
+  apt:
+    pkg: '*'
+    state: latest
+    update_cache: yes
+  become: True
+
+- name: Install Leptonica's build dependencies
+  apt:
+    pkg:
+      - gcc
+      - libgif-dev
+      - libjpeg8-dev
+      - libopenjp2-7-dev
+      - libpng-dev
+      - libtiff5-dev
+      - libwebp-dev
+      - make
+      - pkg-config
+      - zlib1g
+  become: True
+
+- name: Determine Leptonica's latest release information
+  block:
+    - name: Fetch Tesseract release information
+      uri:
+        url: https://api.github.com/repos/DanBloomberg/leptonica/releases/latest
+      register: result
+
+    - name: Determine latest release and release tarball URL of Tesseract
+      set_fact:
+        latest_tarball_url: '{{ result.json.assets[0].browser_download_url }}'
+        latest_version: '{{ result.json.tag_name }}'
+  rescue:
+    - fail:
+        msg: Unable to determine the latest Tesseract release
+
+- name: Create temporary directory for software building
+  tempfile:
+    state: directory
+    prefix: leptonica-installer
+  register: result
+
+- name: Register fact for software building directory
+  set_fact:
+    build_dir: '{{ result.path }}'
+
+- name: Download the latest Leptonica release tarball
+  get_url:
+    url: '{{ latest_tarball_url }}'
+    dest: '{{ build_dir }}'
+  register: result
+
+- name: Register fact for the downloaded release tarball
+  set_fact:
+    release_tarball: '{{ result.dest }}'
+
+- name: Extract the release tarball
+  unarchive:
+    remote_src: yes
+    dest: '{{ build_dir }}'
+    src: '{{ release_tarball }}'
+
+- name: Determine software installation prefix
+  block:
+    - debug:
+        msg: 'BLOCK: Determine software installation prefix: STARTED'
+
+    - set_fact:
+        installation_prefix: '{{ ansible_user_dir }}/.local/opt/leptonica-{{ latest_version }}'
+      when: ansible_user_uid != 0
+
+    - set_fact:
+        installation_prefix: '/opt/leptonica-{{ latest_version }}'
+      when: ansible_user_uid == 0
+
+  block:
+    - debug:
+        msg: 'BLOCK: Determine software installation prefix: ENDED'
+  rescue:
+    - fail:
+        msg: Unable to determine the software installation prefix
+  when: installation_prefix == 'auto-detected'
+
+- name: Configure the build
+  shell: ./configure --prefix={{ installation_prefix | quote }} {{ custom_configure_args }}
+  args:
+    chdir: '{{ build_dir }}/leptonica-{{ latest_version }}'
+
+- name: Build Leptonica
+  shell: make --jobs={{ ansible_processor_vcpus }}
+  args:
+    chdir: '{{ build_dir }}/leptonica-{{ latest_version }}'
+
+# Try to install using regular permission, use elevated permission when failure
+- name: Install Leptonica
+  block:
+    - debug:
+        msg: 'BLOCK: Install Leptonica: STARTED'
+
+    - shell: make install
+      args:
+        chdir: '{{ build_dir }}/leptonica-{{ latest_version }}'
+  rescue:
+    - shell: make install
+      args:
+        chdir: '{{ build_dir }}/leptonica-{{ latest_version }}'
+      become: True
+  always:
+    - debug:
+        msg: 'BLOCK: Install Leptonica: ENDED'
+
