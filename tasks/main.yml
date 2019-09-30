@@ -110,3 +110,7 @@
     - debug:
         msg: 'BLOCK: Install Leptonica: ENDED'
 
+- name: Clean-up build directory
+  file:
+    path: '{{ build_dir }}'
+    state: absent
