@@ -75,7 +75,6 @@
         installation_prefix: '/opt/leptonica-{{ latest_version }}'
       when: ansible_user_uid == 0
 
-  block:
     - debug:
         msg: 'BLOCK: Determine software installation prefix: ENDED'
   rescue:
