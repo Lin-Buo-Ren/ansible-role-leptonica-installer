@@ -34,10 +34,14 @@ Example Playbook
 ----------------
 
 ```yaml
-- name: Install Leptonica
+- name: Install Leptonica to /opt/leptonica, with `CC=gcc6` as additional build configuration
   hosts: localhost
   roles:
-    - leptonica_installer
+    - role: leptonica_installer
+      vars:
+        - installation_prefix: /opt/leptonica
+        - custom_configure_args: '"CC=gcc6"'
+
 ```
 
 License
