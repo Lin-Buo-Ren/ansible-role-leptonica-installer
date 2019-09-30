@@ -47,6 +47,6 @@ Vagrant.configure("2") do |config|
     #vm_default.vm.provision "shell", inline: <<-EOF
       #apt install --yes rsync
     #EOF
-    #vm_default.vm.provision "playbook", path: "provision-default.bash"
+    vm_default.vm.provision "ansible", playbook: "tests/test-vagrant.yml"
   end
 end
