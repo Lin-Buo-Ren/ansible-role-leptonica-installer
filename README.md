@@ -3,6 +3,8 @@ Leptonica Installer
 
 This Ansible role builds and install Leptonica to the specified system.
 
+This software is not affiliated nor endorsed by the Leptonica software.
+
 Requirements
 ------------
 
