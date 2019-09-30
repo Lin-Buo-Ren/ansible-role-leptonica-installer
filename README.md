@@ -17,14 +17,14 @@ Patches on supporting other OS distributions are welcomed.
 Role Variables
 --------------
 
-### Software Installation Prefix (`installation_prefix`)
+### Install Scope (`install_scope`) and the Software Installation Prefix (`installation_prefix`)
 
 Determine the installation prefix of Leptonica, or `auto-detected` for the playbook to determine a sane location automatically:
 
-| user  | installation prefix            |
-| ----- | ------------------------------ |
-| root  | /opt/leptonica-_version_       |
-| other | ~/.local/opt/leptonica-version |
+| install_scope | installation_prefix            |
+| ------------- | ------------------------------ |
+| global        | /opt/leptonica-_version_       |
+| local         | ~/.local/opt/leptonica-version |
 
 ### Additional command-line arguments to pass to the build configuration program(configure) (`custom_configure_args`)
 

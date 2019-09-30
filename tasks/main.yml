@@ -62,18 +62,25 @@
     dest: '{{ build_dir }}'
     src: '{{ release_tarball }}'
 
+- name: If installation prefix is pre-defined, set install_scope to global
+  set_fact:
+    install_scope: global
+  when: installation_prefix != 'auto-detected'
+
 - name: Determine software installation prefix
   block:
     - debug:
         msg: 'BLOCK: Determine software installation prefix: STARTED'
 
-    - set_fact:
+    - name: Set local installation prefix
+      set_fact:
         installation_prefix: '{{ ansible_user_dir }}/.local/opt/leptonica-{{ latest_version }}'
-      when: ansible_user_uid != 0
+      when: install_scope == 'local'
 
-    - set_fact:
+    - name: Set global installation prefix
+      set_fact:
         installation_prefix: '/opt/leptonica-{{ latest_version }}'
-      when: ansible_user_uid == 0
+      when: install_scope == 'global'
 
     - debug:
         msg: 'BLOCK: Determine software installation prefix: ENDED'
@@ -92,7 +99,6 @@
   args:
     chdir: '{{ build_dir }}/leptonica-{{ latest_version }}'
 
-# Try to install using regular permission, use elevated permission when failure
 - name: Install Leptonica
   block:
     - debug:
@@ -101,11 +107,13 @@
     - shell: make install
       args:
         chdir: '{{ build_dir }}/leptonica-{{ latest_version }}'
-  rescue:
+      when: install_scope == 'local'
+
     - shell: make install
       args:
         chdir: '{{ build_dir }}/leptonica-{{ latest_version }}'
       become: True
+      when: install_scope == 'global'
   always:
     - debug:
         msg: 'BLOCK: Install Leptonica: ENDED'

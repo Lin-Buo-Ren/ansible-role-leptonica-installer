@@ -1,4 +1,5 @@
 ---
 # Refer README for details
+install_scope: local
 installation_prefix: auto-detected
 custom_configure_args:
