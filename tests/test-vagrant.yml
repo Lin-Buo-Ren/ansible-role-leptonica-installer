@@ -1,0 +1,7 @@
+---
+- hosts: vagrant
+  roles:
+    - role: chusiang.switch-apt-mirror
+      vars:
+        ubuntu_apt_mirror: tw.archive.ubuntu.com
+    - Leptonica Installer
