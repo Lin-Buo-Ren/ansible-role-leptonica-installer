@@ -1,12 +1,13 @@
 ---
 - name: Update system to apply possible bug fixes
+  become: True
   apt:
     pkg: '*'
     state: latest
     update_cache: yes
-  become: True
 
 - name: Install Leptonica's build dependencies
+  become: True
   apt:
     pkg:
       - gcc
@@ -19,7 +20,6 @@
       - make
       - pkg-config
       - zlib1g
-  become: True
 
 - name: Determine Leptonica's latest release information
   block:
@@ -37,20 +37,20 @@
         msg: Unable to determine the latest Leptonica release
 
 - name: Create temporary directory for software building
+  register: result
   tempfile:
     state: directory
     prefix: leptonica-installer
-  register: result
 
 - name: Register fact for software building directory
   set_fact:
     build_dir: '{{ result.path }}'
 
 - name: Download the latest Leptonica release tarball
+  register: result
   get_url:
     url: '{{ latest_tarball_url }}'
     dest: '{{ build_dir }}'
-  register: result
 
 - name: Register fact for the downloaded release tarball
   set_fact:
@@ -63,31 +63,31 @@
     src: '{{ release_tarball }}'
 
 - name: If installation prefix is pre-defined, set leptonica_install_scope to global
+  when: leptonica_installation_prefix != 'auto-detected'
   set_fact:
     leptonica_install_scope: global
-  when: leptonica_installation_prefix != 'auto-detected'
 
 - name: Determine software installation prefix
+  when: leptonica_installation_prefix == 'auto-detected'
   block:
     - debug:
         msg: 'BLOCK: Determine software installation prefix: STARTED'
 
     - name: Set local installation prefix
+      when: leptonica_install_scope == 'local'
       set_fact:
         leptonica_installation_prefix: '{{ ansible_user_dir }}/.local/opt/leptonica-{{ latest_version }}'
-      when: leptonica_install_scope == 'local'
 
     - name: Set global installation prefix
+      when: leptonica_install_scope == 'global'
       set_fact:
         leptonica_installation_prefix: '/opt/leptonica-{{ latest_version }}'
-      when: leptonica_install_scope == 'global'
 
     - debug:
         msg: 'BLOCK: Determine software installation prefix: ENDED'
   rescue:
     - fail:
         msg: Unable to determine the software installation prefix
-  when: leptonica_installation_prefix == 'auto-detected'
 
 - name: Configure the build
   shell: ./configure --prefix={{ leptonica_installation_prefix | quote }} {{ leptonica_custom_configure_args }}
@@ -105,15 +105,15 @@
         msg: 'BLOCK: Install Leptonica: STARTED'
 
     - shell: make install
+      when: leptonica_install_scope == 'local'
       args:
         chdir: '{{ build_dir }}/leptonica-{{ latest_version }}'
-      when: leptonica_install_scope == 'local'
 
     - shell: make install
+      when: leptonica_install_scope == 'global'
+      become: True
       args:
         chdir: '{{ build_dir }}/leptonica-{{ latest_version }}'
-      become: True
-      when: leptonica_install_scope == 'global'
   always:
     - debug:
         msg: 'BLOCK: Install Leptonica: ENDED'
