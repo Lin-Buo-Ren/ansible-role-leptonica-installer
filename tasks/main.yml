@@ -138,7 +138,7 @@
 - name: Install Leptonica
   block:
     - name: 'Install Leptonica: as current user'
-      when: installation_requires_superuser
+      when: not installation_requires_superuser
       command: make install
       args:
         chdir: '{{ build_dir }}/leptonica-{{ latest_version }}'
