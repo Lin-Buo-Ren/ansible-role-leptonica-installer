@@ -3,3 +3,4 @@
 leptonica_install_scope: local
 leptonica_installation_prefix: auto-detected
 leptonica_custom_configure_args:
+leptonica_skip_package_installation: False

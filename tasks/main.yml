@@ -1,6 +1,7 @@
 ---
 - name: Update system to apply possible bug fixes
   become: True
+  when: not leptonica_skip_package_installation
   apt:
     pkg: '*'
     state: latest
@@ -8,6 +9,7 @@
 
 - name: Install Leptonica's build dependencies
   become: True
+  when: not leptonica_skip_package_installation
   apt:
     pkg:
       - gcc
