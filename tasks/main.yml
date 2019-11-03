@@ -116,6 +116,25 @@
       set_fact:
         installation_requires_superuser: True
 
+- name: Remove existing Leptonica installation if available
+  block:
+    - name: 'Remove existing Leptonica installation if available: as current user'
+      when: not installation_requires_superuser
+      file:
+        path: '{{ leptonica_installation_prefix }}'
+        state: absent
+
+    - name: 'Remove existing Leptonica installation if available: as super user'
+      when: installation_requires_superuser
+      become: True
+      file:
+        path: '{{ leptonica_installation_prefix }}'
+        state: absent
+  rescue:
+    - name: Fail when any task in the block fails
+      fail:
+        msg: Unable to remove existing installation
+
 - name: Install Leptonica
   block:
     - name: 'Install Leptonica: as current user'
