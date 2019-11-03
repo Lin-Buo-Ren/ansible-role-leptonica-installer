@@ -90,15 +90,19 @@
 
 - name: Determine if the installation should be run as superuser
   block:
+    - name: Test if we can create the installation prefix directory as the current user
+      file:
+        path: '{{ leptonica_installation_prefix }}'
+
     - name: Test if the software installation prefix is writable by the current user
       register: result
       tempfile:
-        path: '{{ leptonica_installation_prefix }}/write-test'
-        prefix: write-test
+        path: '{{ leptonica_installation_prefix }}'
+        prefix: write-test.
 
     - name: Remember that we can install software as the current user
       set_fact:
-        installation_requires_superuser: no
+        installation_requires_superuser: False
 
     - name: Remove test file
       file:
@@ -107,18 +111,18 @@
   rescue:
     - name: Remember that the installation should be run as superuser
       set_fact:
-        installation_requires_superuser: yes
+        installation_requires_superuser: True
 
 - name: Install Leptonica
   block:
     - name: 'Install Leptonica: as current user'
-      when: installation_requires_superuser == 'no'
+      when: installation_requires_superuser
       command: make install
       args:
         chdir: '{{ build_dir }}/leptonica-{{ latest_version }}'
 
     - name: 'Install Leptonica: as superuser'
-      when: installation_requires_superuser == 'yes'
+      when: installation_requires_superuser
       become: True
       command: make install
       args:
