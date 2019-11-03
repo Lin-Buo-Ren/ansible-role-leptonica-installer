@@ -1,5 +1,6 @@
 ---
 - hosts: all
+  become: False
   roles:
     - role: chusiang.switch-apt-mirror
       vars:
