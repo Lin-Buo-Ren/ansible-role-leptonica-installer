@@ -17,18 +17,12 @@ Patches on supporting other OS distributions are welcomed.
 Role Variables
 --------------
 
-### Install Scope (`install_scope`) and the Software Installation Prefix (`installation_prefix`)
-
-Determine the installation prefix of Leptonica, or `auto-detected` for the playbook to determine a sane location automatically:
-
-| install_scope | installation_prefix            |
-| ------------- | ------------------------------ |
-| global        | /opt/leptonica-_version_       |
-| local         | ~/.local/opt/leptonica-version |
-
-### Additional command-line arguments to pass to the build configuration program(configure) (`custom_configure_args`)
-
-Each argument should be manually quoted when required, example: `'"CFLAGS=-v" "CXX=/some/c++ compiler"'`
+| Variable name | Description  | Default value |
+| :-: | :-: | :-: |
+| `leptonica_install_scope` | Determine the install scope of the software, only effective when `leptonica_installation_prefix` isn't set to `auto-detected`.  Supported value: `global`, `local`  | `local` |
+| `leptonica_installation_prefix` | The installation prefix for the software, or `auto-detected` for auto detection (`/opt/leptonica-_installed_version_` (when `leptonica_install_scope` is `global`), `~/.local/opt/leptonica-_installed_version_` (when `leptonica_install_scope` is `local`)) | `auto-detected` |
+| `leptonica_custom_configure_args` | Additional command-line arguments to pass to the build configuration program(configure), each argument should be manually quoted when required, example: `'"CFLAGS=-v" "CXX=/some/c++ compiler"'` | (empty) |
+| `leptonica_skip_package_installation` | Skip system update and package installation, this allows installation without superuser privileges.  Supported values: `False`, `True` | `False` |
 
 Example Playbook
 ----------------
