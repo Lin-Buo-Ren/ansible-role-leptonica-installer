@@ -95,6 +95,7 @@
     - name: Test if we can create the installation prefix directory as the current user
       file:
         path: '{{ leptonica_installation_prefix }}'
+        state: directory
 
     - name: Test if the software installation prefix is writable by the current user
       register: result
