@@ -62,18 +62,10 @@
     dest: '{{ build_dir }}'
     src: '{{ release_tarball }}'
 
-- name: If installation prefix is pre-defined, set leptonica_install_scope to global
-  when: leptonica_installation_prefix != 'auto-detected'
-  set_fact:
-    leptonica_install_scope: global
-
 - name: Determine software installation prefix
   when: leptonica_installation_prefix == 'auto-detected'
   block:
-    - debug:
-        msg: 'BLOCK: Determine software installation prefix: STARTED'
-
-    - name: Set local installation prefix
+    - name: Determine software installation prefix: local
       when: leptonica_install_scope == 'local'
       set_fact:
         leptonica_installation_prefix: '{{ ansible_user_dir }}/.local/opt/leptonica-{{ latest_version }}'
@@ -82,9 +74,6 @@
       when: leptonica_install_scope == 'global'
       set_fact:
         leptonica_installation_prefix: '/opt/leptonica-{{ latest_version }}'
-
-    - debug:
-        msg: 'BLOCK: Determine software installation prefix: ENDED'
   rescue:
     - fail:
         msg: Unable to determine the software installation prefix
@@ -101,22 +90,16 @@
 
 - name: Install Leptonica
   block:
-    - debug:
-        msg: 'BLOCK: Install Leptonica: STARTED'
-
-    - shell: make install
+    - shell: Install Leptonica: local scope
       when: leptonica_install_scope == 'local'
       args:
         chdir: '{{ build_dir }}/leptonica-{{ latest_version }}'
 
-    - shell: make install
+    - shell: Install Leptonica: global scope
       when: leptonica_install_scope == 'global'
       become: True
       args:
         chdir: '{{ build_dir }}/leptonica-{{ latest_version }}'
-  always:
-    - debug:
-        msg: 'BLOCK: Install Leptonica: ENDED'
 
 - name: Clean-up build directory
   file:
