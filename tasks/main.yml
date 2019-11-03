@@ -88,16 +88,39 @@
   args:
     chdir: '{{ build_dir }}/leptonica-{{ latest_version }}'
 
+- name: Determine if the installation should be run as superuser
+  block:
+    - name: Test if the software installation prefix is writable by the current user
+      register: result
+      tempfile:
+        path: '{{ leptonica_installation_prefix }}/write-test'
+        prefix: write-test
+
+    - name: Remember that we can install software as the current user
+      set_fact:
+        installation_requires_superuser: no
+
+    - name: Remove test file
+      file:
+        path: '{{ result.path }}'
+        state: absent
+  rescue:
+    - name: Remember that the installation should be run as superuser
+      set_fact:
+        installation_requires_superuser: yes
+
 - name: Install Leptonica
   block:
-    - shell: Install Leptonica: local scope
-      when: leptonica_install_scope == 'local'
+    - name: Install Leptonica: as current user
+      when: installation_requires_superuser == 'no'
+      command: make install
       args:
         chdir: '{{ build_dir }}/leptonica-{{ latest_version }}'
 
-    - shell: Install Leptonica: global scope
-      when: leptonica_install_scope == 'global'
+    - name: Install Leptonica: as superuser
+      when: installation_requires_superuser == 'yes'
       become: True
+      command: make install
       args:
         chdir: '{{ build_dir }}/leptonica-{{ latest_version }}'
 
