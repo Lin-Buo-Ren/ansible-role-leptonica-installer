@@ -65,12 +65,12 @@
 - name: Determine software installation prefix
   when: leptonica_installation_prefix == 'auto-detected'
   block:
-    - name: Determine software installation prefix: local
+    - name: 'Determine software installation prefix: local'
       when: leptonica_install_scope == 'local'
       set_fact:
         leptonica_installation_prefix: '{{ ansible_user_dir }}/.local/opt/leptonica-{{ latest_version }}'
 
-    - name: Set global installation prefix
+    - name: 'Determine software installation prefix:: Set global installation prefix'
       when: leptonica_install_scope == 'global'
       set_fact:
         leptonica_installation_prefix: '/opt/leptonica-{{ latest_version }}'
@@ -111,13 +111,13 @@
 
 - name: Install Leptonica
   block:
-    - name: Install Leptonica: as current user
+    - name: 'Install Leptonica: as current user'
       when: installation_requires_superuser == 'no'
       command: make install
       args:
         chdir: '{{ build_dir }}/leptonica-{{ latest_version }}'
 
-    - name: Install Leptonica: as superuser
+    - name: 'Install Leptonica: as superuser'
       when: installation_requires_superuser == 'yes'
       become: True
       command: make install
